@@ -17,6 +17,24 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@woo
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
+// verify function for jwt
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).send({ message: 'Unauthorized access' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'Access Forbidden' });
+        }
+        req.decoded = decoded;
+        next();
+    });
+
+}
+
 
 const run = async () => {
     try {
@@ -24,10 +42,86 @@ const run = async () => {
         console.log('database connected');
 
 
+        // collections
+        const userCollection = client.db('manufacturer-db').collection('users');
+        const productCollection = client.db('manufacturer-db').collection('products');
+        const reviewCollection = client.db('manufacturer-db').collection('reviews');
+        const orderCollection = client.db('manufacturer-db').collection('orders');
+
+
+        // verify admin from database
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester });
+            const role = requesterAccount.role;
+            if (role === 'admin') {
+                next()
+            } else {
+                res.status(403).send({ message: 'forbidden access' })
+            }
+        }
+
+        // USERS API 
+        // login user api to create token and update user database
+        app.put('/user/:email', async (req, res) => {
+            const user = req.body
+            const email = req.params.email;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: user
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc, options);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
+            res.send({ token });
+        })
+
+        app.put('/user/update/:email', async (req, res) => {
+            const profile = req.body
+            const email = req.params.email;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: profile
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+        app.put('/user/admin/:email', verifyToken, verifyAdmin, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updatedDoc = {
+                $set: { role: 'admin' }
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc);
+            res.send({ result });
+
+        })
+
+        app.get('/user', async (req, res) => {
+            const result = await userCollection.find().toArray();
+            res.send(result);
+        });
+        app.get('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await userCollection.findOne({ email: email });
+            res.send(result);
+        });
+        app.delete('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await userCollection.deleteOne({ email: email });
+            res.send(result);
+        });
+        // ------------------
 
 
 
-        
+
+
+
+
+
+
 
     } finally {
 
