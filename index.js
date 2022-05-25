@@ -147,6 +147,28 @@ const run = async () => {
             res.send(result);
         });
 
+        // Quantity 
+        app.put('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const newUpdate = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    quantity: newUpdate.quantity
+                }
+            };
+            const result = await productCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+        // Delete Product 
+        app.delete('/product/:id', verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            filter = { _id: ObjectId(id) };
+            const result = await productCollection.deleteOne(filter);
+            res.send(result)
+        })
+
 
 
 
