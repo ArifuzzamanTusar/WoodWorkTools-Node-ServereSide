@@ -61,7 +61,9 @@ const run = async () => {
             }
         }
 
-        // USERS API 
+        /*
+        * ~~~~~~~~~~~~USER API~~~~~~~~~~~~~~
+        */
         // login user api to create token and update user database
         app.put('/user/:email', async (req, res) => {
             const user = req.body
@@ -113,6 +115,22 @@ const run = async () => {
             res.send(result);
         });
         // ------------------
+
+
+        /*
+        * ~~~~~~~~~~~~PRODUCT API~~~~~~~~~~~~~~
+        */
+    //    Getting Products 
+        app.get('/product', async (req, res) => {
+            const limit = Number(req.query?.limit);
+            if (limit) {
+                const products = (await productCollection.find().limit(limit).toArray()).reverse();
+                res.send(products);
+            } else {
+                const products = (await productCollection.find().toArray()).reverse();
+                res.send(products);
+            }
+        })
 
 
 
