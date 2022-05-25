@@ -132,6 +132,13 @@ const run = async () => {
             }
         })
 
+        // Get Single Product 
+        app.post('/product', verifyToken, verifyAdmin, async (req, res) => {
+            const product = req.body;
+            const result = await productCollection.insertOne(product);
+            res.send(result);
+        });
+
 
 
 
