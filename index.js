@@ -120,7 +120,7 @@ const run = async () => {
         /*
         * ~~~~~~~~~~~~PRODUCT API~~~~~~~~~~~~~~
         */
-    //    Getting Products 
+        //    Getting Products 
         app.get('/product', async (req, res) => {
             const limit = Number(req.query?.limit);
             if (limit) {
@@ -133,6 +133,14 @@ const run = async () => {
         })
 
         // Get Single Product 
+        app.get('/product/:id', verifyToken, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const product = await productCollection.findOne(filter);
+            res.send(product);
+        })
+
+        // Insert Product
         app.post('/product', verifyToken, verifyAdmin, async (req, res) => {
             const product = req.body;
             const result = await productCollection.insertOne(product);
