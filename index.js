@@ -169,7 +169,7 @@ const run = async () => {
             res.send(result)
         })
 
-        
+
         // REVIEW API 
         app.get('/review', async (req, res) => {
             const reviews = (await reviewCollection.find().toArray()).reverse();
@@ -181,16 +181,68 @@ const run = async () => {
             res.send(result);
         });
 
-        
+        /*
+        * ~~~~~~~~~~~~ORDER  API~~~~~~~~~~~~~~
+        */
+
+        app.get('/order', verifyToken, async (req, res) => {
+            const email = req.query?.email;
+            if (email) {
+                const filter = { email: email }
+                const orders = (await orderCollection.find(filter).toArray()).reverse();
+                res.send(orders);
+            } else {
+                const orders = (await orderCollection.find().toArray()).reverse();
+                res.send(orders);
+            }
+        })
+        app.get('/order/:id', verifyToken, async (req, res) => {
+            const id = req.params.id;
+            const order = await orderCollection.findOne({ _id: ObjectId(id) });
+            res.send(order);
+        })
+
+        app.put('/order/:id', verifyToken, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    status: 'pending',
+                    transactionId: payment.transactionId
+                }
+            }
+            const result = await paymentCollection.insertOne(payment)
+            const updateOrder = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(updatedDoc);
+        })
+
+        app.put('/order/accept/:id', verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const data = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    status: data.status
+                }
+            }
+            const result = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(result)
+        })
 
 
+        app.post('/order', verifyToken, async (req, res) => {
+            const order = req.body;
+            const result = await orderCollection.insertOne(order);
+            res.send(result);
+        })
 
-
-
-
-
-
-
+        app.delete('/order/:id', verifyToken, async (req, res) => {
+            const id = req.params.id;
+            filter = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(filter);
+            res.send(result);
+        })
 
     } finally {
 
