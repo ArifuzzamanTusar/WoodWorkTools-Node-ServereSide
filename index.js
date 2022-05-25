@@ -4,6 +4,7 @@ const app = express();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 
 const port = process.env.PORT || 5000;
@@ -15,6 +16,9 @@ app.use(express.json());
 // database url client 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@woodworktools.o9fke.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+
+
 
 
 // verify function for jwt
@@ -47,7 +51,7 @@ const run = async () => {
         const productCollection = client.db('manufacturer-db').collection('products');
         const reviewCollection = client.db('manufacturer-db').collection('reviews');
         const orderCollection = client.db('manufacturer-db').collection('orders');
-
+        const paymentCollection = client.db('manufacturer-db').collection('payments');
 
         // verify admin from database
         const verifyAdmin = async (req, res, next) => {
@@ -60,6 +64,19 @@ const run = async () => {
                 res.status(403).send({ message: 'forbidden access' })
             }
         }
+        // PAYMENT API FOR STRIPE
+        app.post("/create-payment-intent", verifyToken, async (req, res) => {
+            const order = req.body;
+            const price = order?.price;
+            const amount = price * 100;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({ clientSecret: paymentIntent.client_secret })
+        });
 
         /*
         * ~~~~~~~~~~~~USER API~~~~~~~~~~~~~~
