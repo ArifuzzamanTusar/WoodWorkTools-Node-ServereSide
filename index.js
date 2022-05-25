@@ -169,6 +169,20 @@ const run = async () => {
             res.send(result)
         })
 
+        
+        // REVIEW API 
+        app.get('/review', async (req, res) => {
+            const reviews = (await reviewCollection.find().toArray()).reverse();
+            res.send(reviews);
+        })
+        app.post('/review', verifyToken, async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.send(result);
+        });
+
+        
+
 
 
 
