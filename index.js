@@ -204,7 +204,7 @@ const run = async () => {
         /*
         * ~~~~~~~~~~~~ORDER  API~~~~~~~~~~~~~~
         */
-        
+
         app.get('/order', verifyToken, async (req, res) => {
             const email = req.query?.email;
             if (email) {
@@ -270,10 +270,8 @@ const run = async () => {
 }
 run().catch(console.dir)
 
-
 app.get('/', (req, res) => {
     res.send("server running");
 });
-
 
 app.listen(port, () => console.log('server running on port: ', port))
