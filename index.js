@@ -77,6 +77,7 @@ const run = async () => {
             });
             res.send({ clientSecret: paymentIntent.client_secret })
         });
+        
 
         /*
         * ~~~~~~~~~~~~USER API~~~~~~~~~~~~~~
