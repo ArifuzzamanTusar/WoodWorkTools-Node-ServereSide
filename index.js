@@ -77,7 +77,7 @@ const run = async () => {
             });
             res.send({ clientSecret: paymentIntent.client_secret })
         });
-        
+
 
         /*
         * ~~~~~~~~~~~~USER API~~~~~~~~~~~~~~
@@ -118,6 +118,7 @@ const run = async () => {
             res.send({ result });
 
         })
+        
         // Users 
         app.get('/user', async (req, res) => {
             const result = await userCollection.find().toArray();
