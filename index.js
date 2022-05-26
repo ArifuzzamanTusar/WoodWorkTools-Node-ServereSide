@@ -94,7 +94,7 @@ const run = async () => {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
             res.send({ token });
         })
-
+        // Update Profile 
         app.put('/user/update/:email', async (req, res) => {
             const profile = req.body
             const email = req.params.email;
@@ -106,6 +106,7 @@ const run = async () => {
             const result = await userCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
+        // Role Update 
         app.put('/user/admin/:email', verifyToken, verifyAdmin, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
@@ -116,16 +117,18 @@ const run = async () => {
             res.send({ result });
 
         })
-
+        // Users 
         app.get('/user', async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         });
+        // Single User
         app.get('/user/:email', async (req, res) => {
             const email = req.params.email;
             const result = await userCollection.findOne({ email: email });
             res.send(result);
         });
+        // delete user 
         app.delete('/user/:email', async (req, res) => {
             const email = req.params.email;
             const result = await userCollection.deleteOne({ email: email });
@@ -201,7 +204,7 @@ const run = async () => {
         /*
         * ~~~~~~~~~~~~ORDER  API~~~~~~~~~~~~~~
         */
-
+        
         app.get('/order', verifyToken, async (req, res) => {
             const email = req.query?.email;
             if (email) {
